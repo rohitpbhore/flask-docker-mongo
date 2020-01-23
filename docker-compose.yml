@@ -1,0 +1,26 @@
+version: "3.7"
+
+services:
+
+    db:
+        image: mongo:3.0.2
+        ports:
+            - "27017:27017"
+
+    flask:
+        build: ./flask
+        container_name: flask
+        restart: always
+        environment:
+            - APP_NAME=MyFlaskApp
+        expose:
+            - 8080
+        links:
+            - db
+  
+    nginx:
+        build: ./nginx
+        container_name: nginx
+        restart: always
+        ports:
+            - "80:80"
