@@ -1,6 +1,8 @@
 # Flask and Docker example
 
-The below stack used in thins sample app.
+This is the sample python3, MongoDB CRUD. Each part is deployed on separate Docker containers. The Nginx and uWSGI used as a web and app servers respectivly. 
+
+The complete app stack as below.
 
 1. Python3
 2. Flask
