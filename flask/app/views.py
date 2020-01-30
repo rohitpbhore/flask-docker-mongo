@@ -1,6 +1,5 @@
 from app import app
-import os
-from flask import Flask, redirect, url_for, request, render_template, jsonify
+from flask import Flask, request, jsonify
 import pymongo
 from bson.json_util import dumps
 from bson.objectid import ObjectId
@@ -8,30 +7,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
 # DB conf 
-client = pymongo.MongoClient("mongodb://db:27017/")
-tododb = client.tododb
+client = pymongo.MongoClient(app.config["DB_HOST"])
 db = client.users
 
 # JWT Config
 jwt = JWTManager(app)
-app.config["JWT_SECRET_KEY"] = "this-is-secret-key-can-change-it"
-
-# todo app routes
-@app.route('/')
-def todo():
-    app_name = os.getenv("APP_NAME")
-    _items = tododb.tododb.find()
-    items = [item for item in _items]
-    return render_template('todo.html', items=items, app_name=app_name)
-
-@app.route('/new', methods=['POST'])
-def new():
-    item_doc = {
-        'name': request.form['name'],
-        'description': request.form['description']
-    }
-    tododb.tododb.insert(item_doc)
-    return redirect(url_for('todo'))
 
 # Users CRUD APIs
 @app.route('/users', methods=['GET'])
@@ -42,7 +22,11 @@ def get_users():
 @app.route('/users/<id>', methods=['GET'])
 @jwt_required
 def get_user(id):
-    return dumps(db.users.find_one({'_id':ObjectId(id)}))
+    user = db.users.find_one({'_id':ObjectId(id)})
+    if user:
+        return dumps(user)
+    else:
+        return jsonify(message="User Not Found"), 400
 
 @app.route('/users/<id>', methods=['DELETE'])
 @jwt_required
